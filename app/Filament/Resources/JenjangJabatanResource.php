@@ -64,3 +64,5 @@ class JenjangJabatanResource extends Resource
         ];
     }
 }
+
+//buat coba masuk ke server apa nggak
