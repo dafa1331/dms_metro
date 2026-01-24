@@ -16,4 +16,16 @@ class EditDocument extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    // protected function mutateFormDataBeforeSave(array $data): array
+    // {
+    //     if (isset($data['kode_opd'])) {
+    //         $opd = \App\Models\Opd::where('kode_opd', $data['kode_opd'])->firstOrFail();
+    //         $data['opd_id'] = $opd->id;
+    //         unset($data['kode_opd']);
+    //     }
+
+    //     return $data;
+    // }
+
 }

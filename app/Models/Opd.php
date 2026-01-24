@@ -27,6 +27,11 @@ class Opd extends Model
     {
         return $this->hasMany(Opd::class, 'parent_id');
     }
+
+    public function documents()
+    {
+        return $this->hasMany(Document::class, 'opd_id');
+    }
     
     use HasFactory;
 }
