@@ -43,7 +43,7 @@ class PangkatsResource extends Resource
             Tables\Columns\TextColumn::make('pangkat')->searchable(),
 
         ])
-        
+
         ->actions([
             Tables\Actions\EditAction::make(),
             Tables\Actions\DeleteAction::make(),

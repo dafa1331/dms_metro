@@ -7,10 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class Pangkat extends Model
 {
+    protected $table = 'pangkats';
+    protected $primaryKey = 'id';
+    use HasFactory;
+
     protected $fillable = [
         'golongan',
         'pangkat',
+        'status_aktif',
     ];
 
-    use HasFactory;
+    
+    public function riwayatPangkat() {
+        return $this->hasMany(RiwayatPangkat::class, 'ref_id_pangkat');
+    }
 }
