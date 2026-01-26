@@ -6,6 +6,7 @@ use App\Filament\Resources\PegawaiResource\Pages;
 use App\Filament\Resources\PegawaiResource\RelationManagers;
 use App\Models\Pegawai;
 use App\Models\RefAgama;
+use App\Models\RiwayatJabatan;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -93,6 +94,14 @@ class PegawaiResource extends Resource
                 //
             ])
 
+            ->headerActions([
+            Tables\Actions\Action::make('exportRekon')
+                ->label('Export Rekon Excel')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->url(route('rekon.pegawai.export'))
+                ->openUrlInNewTab(),
+            ])
+
             
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -112,7 +121,7 @@ class PegawaiResource extends Resource
         return [
             RelationManagers\RiwayatKepegawaianRelationManager::class,
             RelationManagers\RiwayatPangkatRelationManager::class,
-            // RelationManagers\RiwayatJabatanRelationManager::class,
+            RelationManagers\RiwayatJabatanRelationManager::class,
             // RelationManagers\RiwayatKeluargaRelationManager::class,
         ];
     }

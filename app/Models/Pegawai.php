@@ -40,4 +40,27 @@ class Pegawai extends Model
     {
         return $this->hasMany(RiwayatPangkat::class);
     }
+
+    public function riwayatJabatan()
+    {
+        return $this->hasMany(RiwayatJabatan::class, 'pegawai_id');
+    }
+
+    public function jabatanAktif()
+    {
+        return $this->hasOne(RiwayatJabatan::class)
+            ->where('status_aktif', 1);
+    }
+
+    public function pangkatTerakhir()
+    {
+        return $this->hasOne(RiwayatPangkat::class)
+            ->latestOfMany('tmt_pangkat');
+    }
+
+    public function kepegawaianAktif()
+    {
+        return $this->hasOne(RiwayatKepegawaian::class)
+            ->where('is_aktif', 1);
+    }
 }
