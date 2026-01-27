@@ -138,4 +138,5 @@ class PegawaiResource extends Resource
 }
 
 
-//tes aja
+//tes aja 
+//kalau ini masuk berati oke
