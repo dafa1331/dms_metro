@@ -39,7 +39,7 @@ class JenjangJabatanResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
                 Tables\Columns\TextColumn::make('nama_jenjang')->searchable(),
-                Tables\Columns\TextColumn::make('keahlian')->searchable(),
+                Tables\Columns\TextColumn::make('keterangan')->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime('d/m/Y H:i'),
             ])
