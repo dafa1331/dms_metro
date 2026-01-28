@@ -16,11 +16,13 @@ return new class extends Migration
             $table->foreignId('pegawai_id')
                 ->constrained('pegawai')
                 ->cascadeOnDelete();
-            $table->string('tingkat_pendidikan');
-            $table->string('nama_sekolah');
-            $table->string('jurusan');
-            $table->date('tahun_masuk');
-            $table->date('tahun_lulus');
+            $table->string('tingkat_pendidikan', 50);
+            $table->string('nama_sekolah', 150);
+            $table->string('jurusan', 150)->nullable();
+            $table->year('tahun_masuk')->nullable();
+            $table->year('tahun_lulus');
+            $table->string('nomor_ijazah', 100);
+            $table->date('tanggal_ijazah');
             $table->timestamps();
         });
     }
