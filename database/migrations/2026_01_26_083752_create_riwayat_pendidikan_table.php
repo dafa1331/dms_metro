@@ -13,6 +13,12 @@ return new class extends Migration
     {
         Schema::create('riwayat_pendidikan', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('pegawai_id')
+                ->constrained('pegawai')
+                ->cascadeOnDelete();
+            $table->string('tingkat_pendidikan');
+            $table->string('nama_sekolah');
+            $table->string('jurusan');
             $table->timestamps();
         });
     }
