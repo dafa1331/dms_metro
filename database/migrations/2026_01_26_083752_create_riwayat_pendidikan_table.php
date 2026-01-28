@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('tingkat_pendidikan');
             $table->string('nama_sekolah');
             $table->string('jurusan');
+            $table->date('tahun_masuk');
+            $table->date('tahun_lulus');
             $table->timestamps();
         });
     }
