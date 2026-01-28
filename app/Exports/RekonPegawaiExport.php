@@ -41,6 +41,12 @@ class RekonPegawaiExport implements FromCollection, WithHeadings, WithMapping
             'Tingkat',
             'Jurusan',
             'Tahun Lulus',
+            'Usia',
+            'TMT BUP',
+            'Kontrak Berakhir',
+            'Masa Kerja Total',
+            'Masa Kerja Golongan',
+            'Masa Kerja Jabatan',
             'Status Pegawai',
             'Status Kepegawaian',
         ];
@@ -50,7 +56,7 @@ class RekonPegawaiExport implements FromCollection, WithHeadings, WithMapping
     {
         $opd = $p->jabatanAktif?->opd;
         return [
-            $p->nip,
+            "'".$p->nip,
             $p->nama_lengkap,
             $p->gelar_depan,
             $p->gelar_belakang,
@@ -75,6 +81,12 @@ class RekonPegawaiExport implements FromCollection, WithHeadings, WithMapping
             $p->pendidikan_terakhir_tingkat,
             $p->pendidikan_terakhir_jurusan,
             $p->pendidikan_terakhir_tahun_lulus,
+            $p->usia,
+            $p->tmt_bup,
+            $p->tanggal_kontrak_berakhir,
+            $p->masa_kerja_total,
+            $p->masa_kerja_golongan,
+            $p->masa_kerja_jabatan,
             $p->status_pegawai,
             $p->kepegawaianAktif?->status ?? '-',
         ];

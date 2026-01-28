@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('pegawai_id')
                 ->constrained('pegawai') // <- nama tabel pegawai di DB
                 ->cascadeOnDelete();
-            $table->enum('status', ['AKTIF','MUTASI_KELUAR','PENSIUN','MENINGGAL','CLTN']);
+            $table->enum('status', ['AKTIF','MUTASI_KELUAR','PENSIUN','MENINGGAL','CLTN'])->default('AKTIF');
             $table->date('tmt_status');
             $table->string('nomor_sk')->nullable();
             $table->date('tanggal_sk')->nullable();

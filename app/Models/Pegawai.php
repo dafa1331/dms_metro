@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Carbon\Carbon;
 
 class Pegawai extends Model
 {
@@ -110,5 +111,137 @@ class Pegawai extends Model
     {
         return $this->pendidikan_terakhir->tahun_lulus ?? '-';
     }
+
+    public function getUsiaAttribute()
+    {
+        if (!$this->tanggal_lahir) {
+            return '-';
+        }
+
+        return Carbon::parse($this->tanggal_lahir)->age;
+    }
+
+    public function getUsiaBupAttribute()
+    {
+        $jabatan = $this->jabatanAktif?->jabatan;
+
+        if (!$jabatan) {
+            return null;
+        }
+
+        // Guru
+        if ($jabatan->jenis_jabatan === 'fungsional'
+            && str_contains(strtolower($jabatan->jenis_fungsional), 'guru')) {
+            return 60;
+        }
+
+        // Fungsional
+        if ($jabatan->jenis_jabatan === 'fungsional') {
+            if (str_contains(strtolower($jabatan->jenjang), 'Ahli Utama')) {
+                return 65;
+            }
+
+            if (str_contains(strtolower($jabatan->jenjang), 'Ahli Madya')) {
+                return 60;
+            }
+
+            return 58; // muda & pertama
+        }
+
+        // Struktural
+        if ($jabatan->jenis_jabatan === 'struktural') {
+            if ($jabatan->eselon === 'II' || $jabatan->eselon === 'I') {
+                return 60; // pimpinan tinggi
+            }
+
+            return 58; // administrator ke bawah
+        }
+
+        return 58;
+    }
+
+    public function getTmtBupAttribute()
+    {
+        if (!$this->tanggal_lahir || !$this->usia_bup) {
+            return '-';
+        }
+
+        $tglBup = \Carbon\Carbon::parse($this->tanggal_lahir)
+            ->addYears($this->usia_bup)
+            ->endOfMonth();
+
+        return $tglBup->format('Y-m-d');
+    }
+
+    public function getTanggalKontrakBerakhirAttribute()
+    {
+        if (!in_array($this->kepegawaianAktif?->jenis_kepegawaian, ['PPPK', 'PPPKPW'])) {
+            return '-';
+        }
+
+        return $this->kepegawaianAktif?->tanggal_selesai_kontrak
+            ? $this->kepegawaianAktif->tanggal_selesai_kontrak->format('Y-m-d')
+            : '-';
+    }
+
+    public function getTmtAwalKerjaAttribute()
+    {
+        return $this->riwayatKepegawaian
+            ->sortBy('tmt_status')
+            ->first()
+            ?->tmt_status;
+    }
+
+    public function getMasaKerjaTotalAttribute()
+    {
+        if (!$this->tmt_awal_kerja) return '-';
+
+        $diff = \Carbon\Carbon::parse($this->tmt_awal_kerja)->diff(now());
+
+        return "{$diff->y} Th {$diff->m} Bln";
+    }
+
+    public function getPangkatTerakhirAttribute()
+    {
+        return $this->riwayatPangkat
+            ->sortByDesc('tmt_pangkat')
+            ->first();
+    }
+
+    public function getMasaKerjaGolonganAttribute()
+    {
+        if (!$this->pangkat_terakhir) return '-';
+
+        $diff = \Carbon\Carbon::parse(
+            $this->pangkat_terakhir->tmt_pangkat
+        )->diff(now());
+
+        return "{$diff->y} Th {$diff->m} Bln";
+    }
+
+    public function getJabatanAktifAttribute()
+    {
+        return $this->riwayatJabatan
+            ->sortByDesc('tmt_mulai')
+            ->first();
+    }
+
+    public function getMasaKerjaJabatanAttribute()
+    {
+        if (!$this->jabatan_aktif) return '-';
+
+        $diff = \Carbon\Carbon::parse(
+            $this->jabatan_aktif->tmt_jabatan
+        )->diff(now());
+
+        return "{$diff->y} Th {$diff->m} Bln";
+    }
+
+
+
+
+
+
+
 
 }
