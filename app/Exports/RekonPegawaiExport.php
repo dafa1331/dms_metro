@@ -37,6 +37,10 @@ class RekonPegawaiExport implements FromCollection, WithHeadings, WithMapping
             'Pangkat',
             'Golongan',
             'TMT Pangkat',
+            'Pendidikan Terakhir',
+            'Tingkat',
+            'Jurusan',
+            'Tahun Lulus',
             'Status Pegawai',
             'Status Kepegawaian',
         ];
@@ -64,6 +68,13 @@ class RekonPegawaiExport implements FromCollection, WithHeadings, WithMapping
             $p->pangkatTerakhir?->pangkat->pangkat ?? '-',
             $p->pangkatTerakhir?->pangkat->golongan ?? '-',
             $p->pangkatTerakhir?->tmt_pangkat ?? '-',
+            $p->pendidikan_terakhir
+                ? $p->pendidikan_terakhir->tingkat_pendidikan
+                    . ' - ' . $p->pendidikan_terakhir->nama_sekolah
+                : '-',
+            $p->pendidikan_terakhir_tingkat,
+            $p->pendidikan_terakhir_jurusan,
+            $p->pendidikan_terakhir_tahun_lulus,
             $p->status_pegawai,
             $p->kepegawaianAktif?->status ?? '-',
         ];

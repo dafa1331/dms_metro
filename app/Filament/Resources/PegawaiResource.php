@@ -7,6 +7,7 @@ use App\Filament\Resources\PegawaiResource\RelationManagers;
 use App\Models\Pegawai;
 use App\Models\RefAgama;
 use App\Models\RiwayatJabatan;
+use App\Models\RiwayatPendidikan;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -122,6 +123,7 @@ class PegawaiResource extends Resource
             RelationManagers\RiwayatKepegawaianRelationManager::class,
             RelationManagers\RiwayatPangkatRelationManager::class,
             RelationManagers\RiwayatJabatanRelationManager::class,
+            RelationManagers\RiwayatPendidikanRelationManager::class,
             // RelationManagers\RiwayatKeluargaRelationManager::class,
         ];
     }

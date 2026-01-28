@@ -15,6 +15,7 @@ class RekonPegawaiExportController extends Controller
             'jabatanAktif.jabatan.jenjangJabatan',
             'pangkatTerakhir.pangkat',
             'kepegawaianAktif',
+            'riwayatPendidikan',
         ])
         ->whereHas('jabatanAktif')
         ->whereHas('pangkatTerakhir')
