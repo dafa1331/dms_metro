@@ -99,6 +99,7 @@ class PegawaiResource extends Resource
             Tables\Actions\Action::make('exportRekon')
                 ->label('Export Rekon Excel')
                 ->icon('heroicon-o-arrow-down-tray')
+                ->color('success')
                 ->url(route('rekon.pegawai.export'))
                 ->openUrlInNewTab(),
             ])

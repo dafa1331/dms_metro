@@ -4,7 +4,6 @@ namespace App\Providers\Filament;
 
 use Filament\Panel;
 use Filament\PanelProvider;
-use Filament\Support\Colors\Color;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -15,21 +14,19 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use App\Http\Middleware\CheckAdminRole;
+use Illuminate\Support\Facades\Auth;
 
-class AdminPanelProvider extends PanelProvider
+class KasubbagPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
-            // ->default()
-            ->id('admin')
-            ->path('admin')
+            ->id('kasubbag')
+            ->path('kasubbag')
             ->login()
             ->authGuard('web')
-            ->colors([
-                'primary' => Color::Blue,
-            ])
+
+            // ✅ MIDDLEWARE WEB LENGKAP (WAJIB)
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -41,18 +38,21 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
+
+            // ✅ ROLE CHECK SETELAH LOGIN
             ->authMiddleware([
-                \Filament\Http\Middleware\Authenticate::class,
-                //  'panel.admin',
+                Authenticate::class,
+                //  'panel.kasubbag',
             ])
 
             ->discoverResources(
-                in: app_path('Filament/Resources'),
-                for: 'App\\Filament\\Resources'
+                in: app_path('Filament/Kasubbag/Resources'),
+                for: 'App\\Filament\\Kasubbag\\Resources'
             )
+
             ->discoverPages(
-                in: app_path('Filament/Pages'),
-                for: 'App\\Filament\\Pages'
+                in: app_path('Filament/Kasubbag/Pages'),
+                for: 'App\\Filament\\Kasubbag\\Pages'
             );
     }
 }

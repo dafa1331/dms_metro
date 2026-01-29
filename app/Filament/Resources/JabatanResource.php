@@ -20,7 +20,7 @@ class JabatanResource extends Resource
     protected static ?string $model = Jabatan::class;
     protected static ?string $navigationIcon = 'heroicon-o-briefcase';
     protected static ?string $navigationGroup = 'Master Data';
-
+    
     public static function form(Form $form): Form
     {
             return $form->schema([
@@ -82,6 +82,7 @@ class JabatanResource extends Resource
                 Action::make('import')
                     ->label('Import Excel')
                     ->icon('heroicon-o-arrow-up-tray')
+                    ->color('success')
                     ->form([
                         Forms\Components\FileUpload::make('file')
                             ->disk('local')
@@ -100,6 +101,7 @@ class JabatanResource extends Resource
 
                 Action::make('export')
                     ->label('Export Excel')
+                    ->color('success')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->action(fn () =>
                         Excel::download(new JabatanExport, 'jabatan.xlsx')

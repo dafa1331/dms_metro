@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 class Document extends Model
 {
@@ -43,5 +44,11 @@ class Document extends Model
         {
             return $this->belongsTo(User::class, 'uploaded_by');
         }
+    
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->where('opd_id', auth()->user()->opd_id);
+    }
 
 }

@@ -26,7 +26,7 @@ class OpdResource extends Resource
 
     protected static ?string $navigationGroup = 'Master Data';
 
-
+    
     public static function form(Form $form): Form
     {
         return $form
@@ -99,7 +99,7 @@ class OpdResource extends Resource
                 Action::make('import')
                     ->label('Import Excel')
                     ->icon('heroicon-o-arrow-up-tray')
-                    ->visible(fn () => auth()->user()->hasRole('admin'))
+                    ->visible(fn () => auth()->user()?->hasRole('admin') ?? false)
                     ->form([
                         Forms\Components\FileUpload::make('file')
                             ->label('File Excel OPD')
@@ -175,7 +175,6 @@ class OpdResource extends Resource
 
     public static function canAccess(): bool
     {
-        return auth()->user()->hasRole('admin');
+        return auth()->user()?->hasRole('admin') ?? false;
     }
-
 }

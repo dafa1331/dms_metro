@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -15,34 +14,61 @@ class User extends Authenticatable
 
     protected $guard_name = 'web';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'opd_id',   // ⬅️ WAJIB supaya bisa mass assign
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    /* ===============================
+     * RELATIONSHIP
+     * =============================== */
+
+    public function opd()
+    {
+        return $this->belongsTo(Opd::class);
+    }
+
+    /* ===============================
+     * HELPER ROLE & PANEL
+     * =============================== */
+
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('admin');
+    }
+
+    public function isKasubbag(): bool
+    {
+        return $this->hasRole('kasubbag_kepegawaian');
+    }
+
+    /* ===============================
+     * SCOPES (UNTUK QUERY FILAMENT)
+     * =============================== */
+
+    public function scopeByOpd($query)
+    {
+        return $query->where('opd_id', auth()->user()->opd_id);
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return match ($panel->getId()) {
+            'admin' => $this->hasRole('admin'),
+            'kasubbag' => $this->hasRole('kasubbag_kepegawaian'),
+            default => false,
+        };
+    }
 }
