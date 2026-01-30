@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class DocumentResource extends Resource
 {
@@ -52,11 +53,23 @@ class DocumentResource extends Resource
                 ->disk('public')
                 ->directory(fn ($get) => 'dokumen/' . $get('type'))
                 ->acceptedFileTypes(['application/pdf'])
-                ->getUploadedFileNameForStorageUsing(function ($file, $get) {
-                    // $file = TemporaryUploadedFile (AMAN)
+                ->getUploadedFileNameForStorageUsing(function (TemporaryUploadedFile $file, $get) {
                     return $get('type') . '_' . $get('nip') . '.' . $file->getClientOriginalExtension();
                 })
+                ->afterStateUpdated(function ($state, callable $set) {
+                    if (! $state instanceof TemporaryUploadedFile) {
+                        return;
+                    }
+
+                    $set('original_name', $state->getClientOriginalName());
+                    $set('mime', $state->getMimeType());
+                    $set('size', $state->getSize());
+                })
                 ->required(),
+
+            Forms\Components\Hidden::make('original_name'),
+            Forms\Components\Hidden::make('mime'),
+            Forms\Components\Hidden::make('size'),
 
         ]);
     }

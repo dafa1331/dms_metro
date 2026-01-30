@@ -14,12 +14,14 @@ class CreateDocument extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // $opd = \App\Models\Opd::where('kode_opd', $data['kode_opd'])->firstOrFail();
+        $opd = \App\Models\Opd::where('id', $data['opd_id'])->firstOrFail();
 
         // unset($data['kode_opd']); // ⛔ PENTING
 
         return array_merge($data, [
             'opd_id'         => $opd->id,
+            // 'original_name'  => basename($data['file_name']),
+            // 'size'           => $file?->getSize() ?? 0,
             'uploaded_by'    => auth()->id(),
             'uploaded_at'    => now(),
             'catatan'        => 'Dokumen valid',

@@ -22,11 +22,14 @@ class AdminPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
-            // ->default()
+            ->default()
             ->id('admin')
             ->path('admin')
             ->login()
             ->authGuard('web')
+            ->pages([
+                \App\Filament\Pages\Dashboard::class, // ← INI WAJIB ADA
+            ])
             ->colors([
                 'primary' => Color::Blue,
             ])
@@ -42,8 +45,9 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->authMiddleware([
-                \Filament\Http\Middleware\Authenticate::class,
+                Authenticate::class,
                 //  'panel.admin',
+                CheckAdminRole::class
             ])
 
             ->discoverResources(
