@@ -12,6 +12,8 @@ class CreateUser extends CreateRecord
 
     protected function afterCreate(): void
     {
-        $this->record->syncRoles($this->data['roles']);
+        // $this->record->syncRoles($this->data['roles']);
+        $roles = Role::whereIn('id', $this->data['roles'])->get();
+        $this->record->syncRoles($roles);
     }
 }

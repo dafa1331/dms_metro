@@ -12,7 +12,7 @@ class Dashboard extends BaseDashboard
     public function getWidgets(): array
     {
         return [
-            PegawaiStats::class,
+            // PegawaiStats::class,
         ];
     }
 }

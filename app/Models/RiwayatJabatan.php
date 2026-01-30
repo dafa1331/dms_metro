@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\JenjangJabatan;
 
 class RiwayatJabatan extends Model
 {
@@ -49,6 +50,32 @@ class RiwayatJabatan extends Model
     public function parentJabatan()
     {
         return $this->belongsTo(self::class, 'parent_jabatan_id');
+    }
+
+    public function getNamaJabatanLengkapAttribute()
+    {
+        if (! $this->jabatan) {
+            return '-';
+        }
+
+        // Jabatan fungsional → pakai jenjang
+        if ($this->jabatan->jenis_jabatan === 'fungsional') {
+            return trim(
+                $this->jabatan->nama_jabatan . ' ' .
+                ($this->jenjangJabatan->nama_jenjang ?? '')
+            );
+        }
+
+        // Jabatan struktural
+        return $this->jabatan->nama_jabatan;
+    }
+    
+    public function jenjangJabatan()
+    {
+        return $this->belongsTo(
+            JenjangJabatan::class,
+            'jenjang_jabatan_id' // ← pastikan sesuai nama kolom
+        );
     }
 
 }

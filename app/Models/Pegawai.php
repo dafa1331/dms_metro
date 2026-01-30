@@ -237,6 +237,38 @@ class Pegawai extends Model
         return "{$diff->y} Th {$diff->m} Bln";
     }
 
+    public function getNamaJabatanLengkapAttribute(): string
+    {
+        $jabatanAktif = $this->jabatanAktif;
+
+        if (! $jabatanAktif || ! $jabatanAktif->jabatan) {
+            return '-';
+        }
+
+        $jabatan = $jabatanAktif->jabatan;
+
+        if ($jabatan->jenis_jabatan === 'fungsional') {
+            return trim(
+                ($jabatan->jenjangJabatan?->nama_jenjang ?? '')
+                . ' - '
+                . $jabatan->nama_jabatan
+            );
+        }
+
+        return $jabatan->nama_jabatan;
+    }
+
+    public function getNamaPangkatAttribute(): string
+    {
+        if (! $this->pangkatTerakhir || ! $this->pangkatTerakhir->pangkat) {
+            return '-';
+        }
+
+        $p = $this->pangkatTerakhir->pangkat;
+
+        return "{$p->pangkat}, {$p->golongan}";
+    }
+
 
 
 
