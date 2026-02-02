@@ -34,4 +34,28 @@ class Opd extends Model
     }
     
     use HasFactory;
+
+    public function getLabelUnitTerkecilAttribute(): string
+    {
+        return collect([
+            $this->nama_opd,
+            $this->parent?->nama_opd,
+            $this->parent?->parent?->nama_opd,
+        ])
+        ->filter()          // buang null
+        ->implode(' - ');
+    }
+
+    public function getLabelHierarchyAttribute(): string
+    {
+        $labels = [$this->nama_opd];
+        $parent = $this->parent;
+
+        while ($parent) {
+            $labels[] = $parent->nama_opd;
+            $parent = $parent->parent;
+        }
+
+        return implode(' - ', $labels);
+    }
 }

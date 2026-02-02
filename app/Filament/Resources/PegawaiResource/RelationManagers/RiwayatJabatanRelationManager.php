@@ -10,6 +10,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Models\Jabatan;
+use App\Models\Opd;
 use App\Models\RiwayatJabatan;
 
 class RiwayatJabatanRelationManager extends RelationManager
@@ -45,8 +46,22 @@ class RiwayatJabatanRelationManager extends RelationManager
                 ->searchable()
                 ->required(),
 
+            // Forms\Components\Select::make('opd_id')
+            //     ->relationship('opd', 'nama_opd')
+            //     ->searchable()
+            //     ->required(),
+
             Forms\Components\Select::make('opd_id')
-                ->relationship('opd', 'nama_opd')
+                ->label('Unit Kerja')
+                ->options(
+                    Opd::with('parent.parent')
+                        ->where('aktif', 1)
+                        ->orderBy('level')
+                        ->orderBy('urutan')
+                        ->get()
+                        ->pluck('label_hierarchy', 'id')
+                )
+                ->searchable()
                 ->required(),
 
             Forms\Components\Select::make('parent_jabatan_id')
