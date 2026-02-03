@@ -51,4 +51,9 @@ class Document extends Model
             ->where('opd_id', auth()->user()->opd_id);
     }
 
+    public function pegawai()
+    {
+        return $this->belongsTo(Pegawai::class, 'nip', 'nip');
+    }
+
 }

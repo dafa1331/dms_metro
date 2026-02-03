@@ -85,6 +85,10 @@ class DocumentResource extends Resource
                 ->label('NIP')
                 ->searchable(),
 
+            Tables\Columns\TextColumn::make('pegawai.nama_lengkap')
+                ->label('Nama pegawai')
+                ->searchable(),
+
             Tables\Columns\TextColumn::make('file_name')
                 ->label('Nama File')
                 ->formatStateUsing(fn ($state) => basename($state))
