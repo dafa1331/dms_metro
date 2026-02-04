@@ -76,7 +76,7 @@ class Pegawai extends Model
 
     public function jabatanAktif()
     {
-        return $this->hasOne(RiwayatJabatan::class)
+        return $this->hasOne(RiwayatJabatan::class, 'pegawai_id')
             ->where('status_aktif', 1);
     }
 

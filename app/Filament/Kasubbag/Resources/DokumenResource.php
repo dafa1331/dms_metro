@@ -4,6 +4,7 @@ namespace App\Filament\Kasubbag\Resources;
 
 use App\Models\Document;
 use App\Models\Pegawai;
+use App\Models\Opd;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -15,6 +16,7 @@ use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Kasubbag\Resources\DokumenResource\Pages;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Illuminate\Support\Facades\Auth;
 
 class DokumenResource extends Resource
 {
@@ -22,40 +24,34 @@ class DokumenResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-document-arrow-up';
     protected static ?string $navigationLabel = 'Upload Dokumen';
     protected static ?string $pluralLabel = 'Upload Dokumen';
-    protected static bool $shouldRegisterNavigation = true;
-    // protected static ?string $navigationGroup = 'Dokumen';
+
     public static function canCreate(): bool
     {
         return Filament::auth()->user()?->hasRole('kasubbag_kepegawaian');
     }
 
     /* =========================
-     * QUERY (OPD SENDIRI)
+     * QUERY → OPD DARI JABATAN AKTIF (+ CHILD)
      * ========================= */
     public static function getEloquentQuery(): Builder
     {
         $user = Filament::auth()->user();
 
+        $opdIds = Opd::find($user->opd_id)
+            ?->getAllChildrenIds() ?? [];
+
         return parent::getEloquentQuery()
-            ->when($user, fn ($q) =>
-                $q->where('opd_id', $user->opd_id)
-            );
+            ->whereHas('pegawai.jabatanAktif', function ($q) use ($opdIds) {
+                $q->whereIn('opd_id', $opdIds);
+            });
     }
 
     /* =========================
-     * FORM UPLOAD
+     * FORM
      * ========================= */
     public static function form(Form $form): Form
     {
         return $form->schema([
-
-            Forms\Components\Select::make('opd_id')
-                ->label('OPD')
-                ->relationship('opd', 'nama_opd')
-                ->default(fn () => Filament::auth()->user()?->opd_id)
-                ->disabled()
-                ->dehydrated()
-                ->required(),
 
             Forms\Components\Select::make('nip')
                 ->label('Pegawai')
@@ -65,48 +61,43 @@ class DokumenResource extends Resource
                     $user = Filament::auth()->user();
                     if (! $user) return [];
 
-                    // ambil OPD induk + semua turunannya
-                    $opdIds = \App\Models\Opd::where('id', $user->opd_id)
-                        ->orWhere('parent_id', $user->opd_id)
-                        ->pluck('id');
+                    $opdIds = Opd::find($user->opd_id)
+                        ?->getAllChildrenIds() ?? [];
 
-                    return Pegawai::whereHas('riwayatJabatan', function ($q) use ($opdIds) {
-                            $q->whereIn('opd_id', $opdIds)
-                            ->where('status_aktif', 1);
-                        })
-                        ->pluck('nama_lengkap', 'nip');
+                    return Pegawai::whereHas('jabatanAktif', function ($q) use ($opdIds) {
+                        $q->whereIn('opd_id', $opdIds);
+                    })->pluck('nama_lengkap', 'nip');
                 })
                 ->getOptionLabelUsing(fn ($value) =>
                     Pegawai::where('nip', $value)->value('nama_lengkap') . " ($value)"
-            ),
+                ),
 
             Forms\Components\Select::make('type')
                 ->label('Jenis Dokumen')
                 ->required()
                 ->options([
-                    'DRH'      => 'DRH',
-                    'SK_CPNS'  => 'SK CPNS',
-                    'SK_PNS'   => 'SK PNS',
-                    'SPMT'     => 'SPMT',
-                    'PERTEK'   => 'PERTEK',
+                    'DRH'     => 'DRH',
+                    'SK_CPNS' => 'SK CPNS',
+                    'SK_PNS'  => 'SK PNS',
+                    'SPMT'    => 'SPMT',
+                    'PERTEK'  => 'PERTEK',
                 ]),
 
-            Forms\Components\FileUpload::make('file_name')
+            Forms\Components\FileUpload::make('temp_path')
                 ->label('Upload Dokumen')
-                ->disk('public')
-                ->directory(fn ($get) => 'dokumen/' . $get('type'))
+                ->disk('local')
+                ->directory(fn ($get) => 'temp/dokumen/' . $get('type'))
                 ->acceptedFileTypes(['application/pdf'])
-                ->getUploadedFileNameForStorageUsing(function (TemporaryUploadedFile $file, $get) {
-                    return $get('type') . '_' . $get('nip') . '.' . $file->getClientOriginalExtension();
-                })
+                ->getUploadedFileNameForStorageUsing(
+                    fn (TemporaryUploadedFile $file, $get) =>
+                        $get('type') . '_' . $get('nip') . '.' . $file->getClientOriginalExtension()
+                )
                 ->afterStateUpdated(function ($state, callable $set) {
-                    if (! $state instanceof TemporaryUploadedFile) {
-                        return;
+                    if ($state instanceof TemporaryUploadedFile) {
+                        $set('original_name', $state->getClientOriginalName());
+                        $set('mime', $state->getMimeType());
+                        $set('size', $state->getSize());
                     }
-
-                    $set('original_name', $state->getClientOriginalName());
-                    $set('mime', $state->getMimeType());
-                    $set('size', $state->getSize());
                 })
                 ->required(),
 
@@ -120,7 +111,7 @@ class DokumenResource extends Resource
     }
 
     /* =========================
-     * TABLE VIEW
+     * TABLE
      * ========================= */
     public static function table(Table $table): Table
     {
@@ -128,6 +119,10 @@ class DokumenResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('nip')
                     ->label('NIP'),
+
+                Tables\Columns\TextColumn::make('pegawai.nama_lengkap')
+                    ->label('Nama Pegawai')
+                    ->searchable(),
 
                 Tables\Columns\TextColumn::make('type')
                     ->label('Jenis'),
@@ -148,29 +143,26 @@ class DokumenResource extends Resource
 
     public static function infolist(Infolist $infolist): Infolist
     {
-        return $infolist->schema([
-            Infolists\Components\Section::make('Informasi Dokumen')
-                ->schema([
-                    Infolists\Components\TextEntry::make('nip')->label('NIP'),
-                    Infolists\Components\TextEntry::make('type')->label('Jenis Dokumen'),
-                    Infolists\Components\TextEntry::make('status_dokumen')->label('Status'),
-                    Infolists\Components\TextEntry::make('uploaded_at')->label('Upload')->dateTime(),
-                    Infolists\Components\TextEntry::make('tanggal_verif')->label('Verifikasi')->dateTime(),
-                    Infolists\Components\TextEntry::make('catatan')->label('Catatan'),
-                ])
-                ->columns(2),
-
+        return $infolist
+        // ->maxWidth(MaxWidth::Full)
+        ->schema([
+            Infolists\Components\TextEntry::make('nip')->label('NIP'),
+            Infolists\Components\TextEntry::make('type')->label('Jenis'),
+            Infolists\Components\TextEntry::make('status_dokumen')->label('Status'),
+            Infolists\Components\TextEntry::make('uploaded_at')->dateTime(),
             Infolists\Components\Section::make('Preview Dokumen')
                 ->schema([
                     Infolists\Components\ViewEntry::make('file_name')
-                        ->view('filament.infolists.pdf-preview'),
-                ]),
+                        ->view('filament.infolists.pdf-preview')
+                        ->columnSpanFull(),
+                ])
+                ->columnSpanFull(),
         ]);
+        return $infolist
+        ->columns(1); // ⬅️ pentin
+        
     }
 
-    /* =========================
-     * PAGES
-     * ========================= */
     public static function getPages(): array
     {
         return [
@@ -178,4 +170,11 @@ class DokumenResource extends Resource
             'create' => Pages\CreateDokumen::route('/create'),
         ];
     }
+
+    public function viewAny(User $user): bool
+    {
+        return $user->hasRole('kasubbag_kepegawaian')
+            || $user->hasRole('bkpsdm');
+    }
+    
 }

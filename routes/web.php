@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RekonPegawaiExportController;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Document; 
 
 /*
 |--------------------------------------------------------------------------
@@ -31,3 +32,13 @@ Route::post('/logout', function () {
 
     return redirect('/login');
 })->name('logout');
+
+Route::get('/preview-temp/{document}', function (Document $document) {
+    abort_unless($document->temp_path, 404);
+
+    return response()->file(
+        storage_path('app/' . $document->temp_path)
+    );
+})
+->middleware('auth')
+->name('preview.temp');

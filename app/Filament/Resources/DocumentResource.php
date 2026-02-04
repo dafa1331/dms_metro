@@ -111,31 +111,42 @@ class DocumentResource extends Resource
                     Tables\Actions\Action::make('terima')
                         ->label('Terima')
                         ->color('success')
-                        ->requiresConfirmation()
-                        ->action(fn (Document $record) =>
+                        ->action(function (Document $record) {
+
+                            $finalPath = 'dokumen/' . $record->nip . '/' . basename($record->temp_path);
+
+                            \Storage::disk('public')->put(
+                                $finalPath,
+                                \Storage::disk('local')->get($record->temp_path)
+                            );
+
+                            \Storage::disk('local')->delete($record->temp_path);
+
                             $record->update([
+                                'file_name' => $finalPath,
+                                'temp_path' => null,
                                 'status_dokumen' => 'terima',
-                                'catatan'        => 'Dokumen valid',
-                                'tanggal_verif'  => now(),
-                            ])
-                        ),
+                                'tanggal_verif' => now(),
+                            ]);
+                        })
+                        ->visible(fn ($record) => $record->status_dokumen === 'proses'),
 
                     Tables\Actions\Action::make('tolak')
                         ->label('Tolak')
                         ->color('danger')
                         ->requiresConfirmation()
-                        ->form([
-                            Forms\Components\Textarea::make('catatan')
-                                ->label('Catatan Penolakan')
-                                ->required(),
-                        ])
-                        ->action(fn (Document $record, array $data) =>
+                        ->action(function (Document $record) {
+
+                            if ($record->temp_path) {
+                                \Storage::disk('local')->delete($record->temp_path);
+                            }
+
                             $record->update([
+                                'temp_path' => null,
                                 'status_dokumen' => 'tolak',
-                                'catatan'        => $data['catatan'],
-                                'tanggal_verif'  => now(),
-                            ])
-                        ),
+                            ]);
+                        })
+                        ->visible(fn ($record) => $record->status_dokumen === 'proses'),
                 ]),
 
             Tables\Actions\EditAction::make(),

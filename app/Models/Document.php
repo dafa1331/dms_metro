@@ -28,6 +28,7 @@ class Document extends Model
         'catatan',
         'status_dokumen',
         'tanggal_verif',
+        'temp_path',
     ];
 
     protected $casts = [

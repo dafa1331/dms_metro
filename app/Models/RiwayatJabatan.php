@@ -23,6 +23,7 @@ class RiwayatJabatan extends Model
         'nomor_sk',
         'tanggal_sk',
         'status_aktif',
+        'is_struktural',
     ];
 
     protected $casts = [

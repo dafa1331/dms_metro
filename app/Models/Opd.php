@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Opd extends Model
 
 {
+    use HasFactory;
+
      protected $fillable = [
         'kode_opd',
         'nama_opd',
@@ -32,8 +34,17 @@ class Opd extends Model
     {
         return $this->hasMany(Document::class, 'opd_id');
     }
-    
-    use HasFactory;
+
+    public function getAllChildrenIds(): array
+    {
+        $ids = [$this->id];
+
+        foreach ($this->children as $child) {
+            $ids = array_merge($ids, $child->getAllChildrenIds());
+        }
+
+        return $ids;
+    }
 
     public function getLabelUnitTerkecilAttribute(): string
     {

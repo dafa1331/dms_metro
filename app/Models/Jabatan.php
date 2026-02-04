@@ -23,5 +23,11 @@ class Jabatan extends Model
         return $this->belongsTo(JenjangJabatan::class, 'jenjang_jabatan_id');
     }
 
+    public function riwayatJabatanAktif()
+    {
+        return $this->hasOne(RiwayatJabatan::class)
+            ->where('status_aktif', 1);
+    }
+
     use HasFactory;
 }
