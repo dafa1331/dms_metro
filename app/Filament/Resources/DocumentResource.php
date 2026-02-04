@@ -113,7 +113,7 @@ class DocumentResource extends Resource
                         ->color('success')
                         ->action(function (Document $record) {
 
-                            $finalPath = 'dokumen/' . $record->nip . '/' . basename($record->temp_path);
+                            $finalPath = 'dokumen/' . $record->type . '/' . basename($record->temp_path);
 
                             \Storage::disk('public')->put(
                                 $finalPath,
