@@ -135,18 +135,28 @@ class DocumentResource extends Resource
                         ->label('Tolak')
                         ->color('danger')
                         ->requiresConfirmation()
-                        ->action(function (Document $record) {
+                        ->form([
+                            Forms\Components\Textarea::make('catatan')
+                                ->label('Catatan Penolakan')
+                                ->required()
+                                ->placeholder('Tuliskan alasan penolakan dokumen ini...'),
+                        ])
+                        ->action(function (array $data, Document $record) {
 
+                            // Hapus file sementara jika ada
                             if ($record->temp_path) {
                                 \Storage::disk('local')->delete($record->temp_path);
                             }
 
+                            // Update record termasuk catatan penolakan
                             $record->update([
                                 'temp_path' => null,
                                 'status_dokumen' => 'tolak',
+                                'catatan' => $data['catatan'], // simpan catatan
                             ]);
                         })
                         ->visible(fn ($record) => $record->status_dokumen === 'proses'),
+
                 ]),
 
             Tables\Actions\EditAction::make(),

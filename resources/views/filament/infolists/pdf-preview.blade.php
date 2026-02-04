@@ -6,7 +6,7 @@
     if ($record->status_dokumen === 'terima' && $record->file_name) {
         $url = asset('storage/' . $record->file_name);
     } elseif ($record->temp_path) {
-        $url = route('preview.temp', ['document' => $record->id]);
+        $url = route('preview.temp', ['document' => $record->opd_id]);
     }
 @endphp
 
