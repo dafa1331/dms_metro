@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Kasubbag\Resources\DokumenResource\Pages;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Filament\Tables\Filters\SelectFilter;
 
 class DokumenResource extends Resource
 {
@@ -52,7 +53,6 @@ class DokumenResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-
             Forms\Components\Select::make('nip')
                 ->label('Pegawai')
                 ->searchable()
@@ -84,7 +84,7 @@ class DokumenResource extends Resource
                 ]),
 
             Forms\Components\FileUpload::make('temp_path')
-                ->label('Upload Dokumen')
+                ->label(fn ($record) => $record?->status_dokumen === 'tolak' ? 'Unggah Dokumen Perbaikan' : 'Upload Dokumen')
                 ->disk('local')
                 ->directory(fn ($get) => 'temp/dokumen/' . $get('type'))
                 ->acceptedFileTypes(['application/pdf'])
@@ -92,21 +92,25 @@ class DokumenResource extends Resource
                     fn (TemporaryUploadedFile $file, $get) =>
                         $get('type') . '_' . $get('nip') . '.' . $file->getClientOriginalExtension()
                 )
-                ->afterStateUpdated(function ($state, callable $set) {
+                ->afterStateUpdated(function ($state, callable $set, $get, $record) {
                     if ($state instanceof TemporaryUploadedFile) {
                         $set('original_name', $state->getClientOriginalName());
                         $set('mime', $state->getMimeType());
                         $set('size', $state->getSize());
+
+                        // Jika dokumen sebelumnya ditolak, ubah status kembali ke proses
+                        if ($record && $record->status_dokumen === 'tolak') {
+                            $set('status_dokumen', 'perbaikan');
+                            $set('catatan', null); // reset catatan penolakan
+                        }
                     }
                 })
-                ->required(),
+                ->required(fn ($record) => $record?->status_dokumen === 'tolak'),
 
             Forms\Components\Hidden::make('original_name'),
             Forms\Components\Hidden::make('mime'),
             Forms\Components\Hidden::make('size'),
-
-            Forms\Components\Hidden::make('status_dokumen')
-                ->default('proses'),
+            Forms\Components\Hidden::make('status_dokumen')->default('proses'),
         ]);
     }
 
@@ -116,53 +120,93 @@ class DokumenResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
-                Tables\Columns\TextColumn::make('nip')
-                    ->label('NIP'),
-
-                Tables\Columns\TextColumn::make('pegawai.nama_lengkap')
-                    ->label('Nama Pegawai')
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('type')
-                    ->label('Jenis'),
-
-                Tables\Columns\BadgeColumn::make('status_dokumen')
-                    ->label('Status')
-                    ->colors([
-                        'warning' => 'proses',
-                        'success' => 'terima',
-                        'danger'  => 'tolak',
+            ->filters([
+                SelectFilter::make('status_dokumen')
+                    ->label('Status Dokumen')
+                    ->options([
+                        'terima' => 'Terima',
+                        'tolak'  => 'Tolak',
+                        'proses' => 'Proses',
+                        'perbaikan' => 'Perbaikan',
                     ]),
+            ])
+            ->columns([
+                Tables\Columns\TextColumn::make('nip')->label('NIP'),
+                Tables\Columns\TextColumn::make('pegawai.nama_lengkap')->label('Nama Pegawai')->searchable(),
+                Tables\Columns\TextColumn::make('type')->label('Jenis'),
+                Tables\Columns\BadgeColumn::make('status_dokumen')->label('Status')->colors([
+                    'warning' => 'proses',
+                    'success' => 'terima',
+                    'danger'  => 'tolak',
+                    'primary' => 'perbaikan',
+                ]),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
+                Tables\Actions\Action::make('perbaiki')
+                    ->label('Perbaiki')
+                    ->icon('heroicon-o-pencil')
+                    ->form([
+                        Forms\Components\FileUpload::make('temp_path')
+                            ->required()
+                            ->disk('local')
+                            ->directory(fn ($get) => 'temp/dokumen/' . $get('type'))
+                            ->acceptedFileTypes(['application/pdf'])
+                            ->getUploadedFileNameForStorageUsing(
+                                fn (TemporaryUploadedFile $file, Document $record) =>
+                                    $record->type . '_' . $record->nip . '.' . $file->getClientOriginalExtension()
+                            ),
+                        Forms\Components\Textarea::make('catatan'),
+                    ])
+                    ->action(function (array $data, Document $record) {
+
+                        // ⬅️ INI STRING PATH, BUKAN OBJECT
+                        $path = $data['temp_path'];
+
+                        // ambil metadata dari storage
+                        $fullPath = storage_path('app/' . $path);
+
+                        $record->update([
+                            'temp_path' => $path,
+                            'status_dokumen' => 'perbaikan',
+                            'catatan' => $data['catatan'] ?? null,
+                            'original_name' => basename($path),
+                            'mime' => mime_content_type($fullPath),
+                            'size' => filesize($fullPath),
+                            'uploaded_at' => now(),
+                        ]);
+                    })
+                    ->visible(fn ($record) => $record->status_dokumen === 'tolak'),
+
             ])
             ->bulkActions([]);
     }
 
+    /* =========================
+     * INFOLIST / PREVIEW PDF
+     * ========================= */
     public static function infolist(Infolist $infolist): Infolist
     {
         return $infolist
-        // ->maxWidth(MaxWidth::Full)
-        ->schema([
-            Infolists\Components\TextEntry::make('nip')->label('NIP'),
-            Infolists\Components\TextEntry::make('type')->label('Jenis'),
-            Infolists\Components\TextEntry::make('status_dokumen')->label('Status'),
-            Infolists\Components\TextEntry::make('uploaded_at')->dateTime(),
-            Infolists\Components\Section::make('Preview Dokumen')
-                ->schema([
-                    Infolists\Components\ViewEntry::make('file_name')
-                        ->view('filament.infolists.pdf-preview')
-                        ->columnSpanFull(),
-                ])
-                ->columnSpanFull(),
-        ]);
-        return $infolist
-        ->columns(1); // ⬅️ pentin
-        
+            ->schema([
+                Infolists\Components\TextEntry::make('nip')->label('NIP'),
+                Infolists\Components\TextEntry::make('type')->label('Jenis'),
+                Infolists\Components\TextEntry::make('status_dokumen')->label('Status'),
+                Infolists\Components\TextEntry::make('uploaded_at')->dateTime(),
+                Infolists\Components\Section::make('Preview Dokumen')
+                    ->schema([
+                        Infolists\Components\ViewEntry::make('file_name')
+                            ->view('filament.infolists.pdf-preview')
+                            ->columnSpanFull(),
+                    ])
+                    ->columnSpanFull(),
+            ])
+            ->columns(1);
     }
 
+    /* =========================
+     * PAGES
+     * ========================= */
     public static function getPages(): array
     {
         return [
@@ -171,10 +215,59 @@ class DokumenResource extends Resource
         ];
     }
 
+    /* =========================
+     * PERMISSIONS
+     * ========================= */
     public function viewAny(User $user): bool
     {
-        return $user->hasRole('kasubbag_kepegawaian')
-            || $user->hasRole('bkpsdm');
+        return $user->hasRole('kasubbag_kepegawaian') || $user->hasRole('bkpsdm');
     }
-    
+
+    /* =========================
+     * HANDLE DOKUMEN YANG DITOLAK
+     * ========================= */
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        $existing = Document::where('nip', $data['nip'])
+            ->where('type', $data['type'])
+            ->first();
+
+        if ($existing && $existing->status_dokumen === 'tolak') {
+            if ($existing->temp_path) {
+                \Storage::disk('local')->delete($existing->temp_path);
+            }
+
+            $file = $data['temp_path'];
+
+            if ($file instanceof TemporaryUploadedFile) {
+                $path = $file->store('temp/dokumen/' . $data['type'], 'local');
+                $originalName = $file->getClientOriginalName();
+                $mime = $file->getMimeType();
+                $size = $file->getSize();
+            } else {
+                $path = $file;
+                $originalName = $data['original_name'] ?? null;
+                $mime = $data['mime'] ?? null;
+                $size = $data['size'] ?? null;
+            }
+
+            $existing->update([
+                'temp_path' => $path,
+                'original_name' => $originalName,
+                'mime' => $mime,
+                'size' => $size,
+                'status_dokumen' => 'proses',
+                'catatan' => null,
+                'uploaded_at' => now(),
+            ]);
+
+            throw new \Filament\Support\Exceptions\Halt();
+        }
+
+        $data['status_dokumen'] = 'proses';
+        $data['opd_id'] = auth()->user()->opd_id;
+        $data['uploaded_at'] = now();
+
+        return $data;
+    }
 }

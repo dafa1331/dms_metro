@@ -33,12 +33,15 @@ Route::post('/logout', function () {
     return redirect('/login');
 })->name('logout');
 
-Route::get('/preview-temp/{document}', function (Document $document) {
-    abort_unless($document->temp_path, 404);
+Route::get('/preview-temp', function (\Illuminate\Http\Request $request) {
+    $file = $request->query('file'); // ambil dari query string
+    $path = storage_path('app/' . $file);
 
-    return response()->file(
-        storage_path('app/' . $document->temp_path)
-    );
+    if (!file_exists($path)) {
+        abort(404, 'File tidak ditemukan');
+    }
+
+    return response()->file($path);
 })
 ->middleware('auth')
 ->name('preview.temp');

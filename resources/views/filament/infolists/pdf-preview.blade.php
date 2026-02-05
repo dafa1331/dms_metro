@@ -1,12 +1,14 @@
 @php
     $record = $getRecord();
-
     $url = null;
 
     if ($record->status_dokumen === 'terima' && $record->file_name) {
         $url = asset('storage/' . $record->file_name);
-    } elseif ($record->temp_path) {
-        $url = route('preview.temp', ['document' => $record->opd_id]);
+    }elseif($record->status_dokumen === 'perbaikan'){
+        $url = route('preview.temp', ['file' => $record->temp_path]);
+    }elseif ($record->temp_path) {
+        // Gunakan path relatif dari storage/app
+        $url = route('preview.temp', ['file' => $record->temp_path]);
     }
 @endphp
 

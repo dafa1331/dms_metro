@@ -100,6 +100,7 @@ class DocumentResource extends Resource
                     'success' => 'terima',
                     'warning' => 'proses',
                     'danger'  => 'tolak',
+                    'primary'  => 'perbaikan',  
                 ]),
         ])
         ->actions([
@@ -111,6 +112,7 @@ class DocumentResource extends Resource
                     Tables\Actions\Action::make('terima')
                         ->label('Terima')
                         ->color('success')
+                        ->requiresConfirmation()
                         ->action(function (Document $record) {
 
                             $finalPath = 'dokumen/' . $record->type . '/' . basename($record->temp_path);
@@ -129,7 +131,8 @@ class DocumentResource extends Resource
                                 'tanggal_verif' => now(),
                             ]);
                         })
-                        ->visible(fn ($record) => $record->status_dokumen === 'proses'),
+                        ->visible(fn ($record) => in_array($record->status_dokumen, ['proses', 'perbaikan'])),
+                        // ->visible(fn ($record) => $record->status_dokumen === 'perbaikan'),
 
                     Tables\Actions\Action::make('tolak')
                         ->label('Tolak')
@@ -155,7 +158,8 @@ class DocumentResource extends Resource
                                 'catatan' => $data['catatan'], // simpan catatan
                             ]);
                         })
-                        ->visible(fn ($record) => $record->status_dokumen === 'proses'),
+                       ->visible(fn ($record) => in_array($record->status_dokumen, ['proses', 'perbaikan'])),
+                        // ->visible(fn ($record) => $record->status_dokumen === 'perbaikan'),
 
                 ]),
 
