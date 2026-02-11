@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Models\Jabatan;
 use App\Models\Opd;
 use App\Models\RiwayatJabatan;
+use App\Models\Pegawai;
 use Illuminate\Validation\ValidationException;
 
 class RiwayatJabatanRelationManager extends RelationManager

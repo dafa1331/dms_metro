@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RekonPegawaiExportController;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Document; 
+use App\Livewire\LandingPage;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,9 +17,10 @@ use App\Models\Document;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () {
+//     return view('welcome');
+// });
+Route::get('/', LandingPage::class);
 
 Route::get(
     '/rekon/pegawai/export',
