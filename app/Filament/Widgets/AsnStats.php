@@ -12,9 +12,9 @@ class AsnStats extends StatsOverviewWidget
     {
         return [
             Stat::make('Total ASN', Pegawai::count()),
-            Stat::make('PNS', Pegawai::where('jenis_pegawai', 'PNS')->count()),
-            Stat::make('PPPK', Pegawai::where('jenis_pegawai', 'PPPK')->count()),
-            Stat::make('PPPK Paruh Waktu', Pegawai::where('jenis_pegawai', 'PPPKPW')->count()),
+            Stat::make('PNS', Pegawai::where('status_pegawai', 'PNS')->count()),
+            Stat::make('PPPK', Pegawai::where('status_pegawai', 'PPPK')->count()),
+            Stat::make('PPPK Paruh Waktu', Pegawai::where('status_pegawai', 'PPPKPW')->count()),
         ];
     }
 }

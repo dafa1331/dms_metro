@@ -34,6 +34,12 @@ class UsiaChart extends ChartWidget
             'datasets' => [
                 [
                     'data' => array_values($usia),
+                    'backgroundColor' => [
+                    '#3B82F6', // Fungsional
+                    '#EF4444', // Struktural
+                    '#10B981', // Pelaksana
+                    '#F54927'
+                ],
                 ],
             ],
             'labels' => array_keys($usia),

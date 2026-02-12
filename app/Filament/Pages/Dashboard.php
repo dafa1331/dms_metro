@@ -7,6 +7,7 @@ use App\Filament\Widgets\AsnStats;
 use App\Filament\Widgets\JabatanChart;
 use App\Filament\Widgets\UsiaChart;
 use App\Filament\Widgets\AktivitasTerbaru;
+use App\Filament\Widgets\ProgressDokumenPerOpd;
 
 class Dashboard extends BaseDashboard
 {
@@ -24,7 +25,9 @@ class Dashboard extends BaseDashboard
         return [
             JabatanChart::class,
             UsiaChart::class,
-            AktivitasTerbaru::class,
+            ProgressDokumenPerOpd::class,
+            // AktivitasTerbaru::class,
         ];
     }
+    
 }

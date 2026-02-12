@@ -52,10 +52,10 @@ class AdminPanelProvider extends PanelProvider
                 CheckAdminRole::class
             ])
             ->widgets(widgets:[
-                widgets\AktivitasTerbaru::class,
-                widgets\AsnStats::class,
-                widgets\JabatanChart::class,
-                widgets\UsiaChart::class,
+                \App\Filament\Widgets\ProgressDokumenPerOpd::class,
+                \App\Filament\Widgets\AsnStats::class,
+                \App\Filament\Widgets\JabatanChart::class,
+                \App\Filament\Widgets\UsiaChart::class,
             ])
 
             ->discoverResources(

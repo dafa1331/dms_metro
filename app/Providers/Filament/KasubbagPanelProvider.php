@@ -60,6 +60,12 @@ class KasubbagPanelProvider extends PanelProvider
             ->discoverPages(
                 in: app_path('Filament/Kasubbag/Pages'),
                 for: 'App\\Filament\\Kasubbag\\Pages'
-            );
+            )
+
+            ->widgets([
+                \App\Filament\Widgets\StatistikKasubbag::class,
+                \App\Filament\Widgets\ProgressUploadKasubbag::class,
+                // \App\Filament\Widgets\InformasiKasubbag::class,
+            ]);
     }
 }
