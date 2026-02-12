@@ -29,6 +29,8 @@ class Document extends Model
         'status_dokumen',
         'tanggal_verif',
         'temp_path',
+        'is_riwayat',
+        'keterangan_riwayat'
     ];
 
     protected $casts = [

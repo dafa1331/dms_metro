@@ -75,37 +75,60 @@ class DokumenResource extends Resource
             Forms\Components\Select::make('type')
                 ->label('Jenis Dokumen')
                 ->required()
+                ->reactive()
                 ->options([
                     'DRH'     => 'DRH',
                     'SK_CPNS' => 'SK CPNS',
                     'SK_PNS'  => 'SK PNS',
                     'SPMT'    => 'SPMT',
                     'PERTEK'  => 'PERTEK',
-                ]),
+                    'PANGKAT' => 'SK Pangkat',
+                    'JABATAN' =>  'SK Jabatan',
+                    'PENDIDIKAN' => 'Pendidikan',
+                    'DIKLAT' => 'Diklat',
+                ])
+                ->afterStateUpdated(function ($state, callable $set) {
+                    $riwayatTypes = ['PANGKAT','JABATAN', 'PENDIDIKAN', 'DIKLAT'];
+                    $set('is_riwayat', in_array($state, $riwayatTypes) ? 1 : 0);
+                }),
+
+            Forms\Components\Hidden::make('is_riwayat')->default(0),
+
+           Forms\Components\TextInput::make('keterangan_riwayat')
+            ->label('Keterangan Riwayat')
+            ->visible(fn ($get) => in_array($get('type'), ['PANGKAT', 'JABATAN', 'PENDIDIKAN', 'DIKLAT']))
+            ->required(fn ($get) => in_array($get('type'), ['PANGKAT', 'JABATAN', 'PENDIDIKAN', 'DIKLAT'])),
 
             Forms\Components\FileUpload::make('temp_path')
-                ->label(fn ($record) => $record?->status_dokumen === 'tolak' ? 'Unggah Dokumen Perbaikan' : 'Upload Dokumen')
                 ->disk('local')
                 ->directory(fn ($get) => 'temp/dokumen/' . $get('type'))
                 ->acceptedFileTypes(['application/pdf'])
                 ->getUploadedFileNameForStorageUsing(
-                    fn (TemporaryUploadedFile $file, $get) =>
-                        $get('type') . '_' . $get('nip') . '.' . $file->getClientOriginalExtension()
+                    function (TemporaryUploadedFile $file, $get) {
+
+                        $type = $get('type');
+                        $nip = $get('nip');
+                        $tanggal = now()->format('Ymd_His');
+
+                        if ($type === 'PANGKAT' && $get('keterangan_riwayat')) {
+                            $keterangan_riwayat = str_replace(['/', ' '], ['-', ''], $get('keterangan_riwayat'));
+
+                            return "{$type}_{$nip}_{$keterangan_riwayat}_{$tanggal}." .
+                                $file->getClientOriginalExtension();
+                        }
+
+                        return "{$type}_{$nip}_{$tanggal}." .
+                            $file->getClientOriginalExtension();
+                    }
                 )
-                ->afterStateUpdated(function ($state, callable $set, $get, $record) {
+                ->afterStateUpdated(function ($state, callable $set) {
                     if ($state instanceof TemporaryUploadedFile) {
                         $set('original_name', $state->getClientOriginalName());
                         $set('mime', $state->getMimeType());
                         $set('size', $state->getSize());
-
-                        // Jika dokumen sebelumnya ditolak, ubah status kembali ke proses
-                        if ($record && $record->status_dokumen === 'tolak') {
-                            $set('status_dokumen', 'perbaikan');
-                            $set('catatan', null); // reset catatan penolakan
-                        }
                     }
                 })
-                ->required(fn ($record) => $record?->status_dokumen === 'tolak'),
+                ->required(),
 
             Forms\Components\Hidden::make('original_name'),
             Forms\Components\Hidden::make('mime'),
@@ -113,6 +136,7 @@ class DokumenResource extends Resource
             Forms\Components\Hidden::make('status_dokumen')->default('proses'),
         ]);
     }
+
 
     /* =========================
      * TABLE
@@ -153,8 +177,18 @@ class DokumenResource extends Resource
                             ->directory(fn ($get) => 'temp/dokumen/' . $get('type'))
                             ->acceptedFileTypes(['application/pdf'])
                             ->getUploadedFileNameForStorageUsing(
-                                fn (TemporaryUploadedFile $file, Document $record) =>
-                                    $record->type . '_' . $record->nip . '.' . $file->getClientOriginalExtension()
+                                function (TemporaryUploadedFile $file, Document $record) {
+
+                                    $keterangan_riwayat = $record->keterangan_riwayat
+                                        ? str_replace(['/', ' '], ['-', ''], $record->keterangan_riwayat)
+                                        : null;
+
+                                    return $record->type
+                                        . '_' . $record->nip
+                                        . ($keterangan_riwayat ? '_' . $keterangan_riwayat : '')
+                                        . '_' . now()->format('Ymd_His')
+                                        . '.' . $file->getClientOriginalExtension();
+                                }
                             ),
                         Forms\Components\Textarea::make('catatan'),
                     ])

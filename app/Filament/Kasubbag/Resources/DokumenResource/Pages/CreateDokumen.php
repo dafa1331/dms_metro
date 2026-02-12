@@ -15,53 +15,42 @@ class CreateDokumen extends CreateRecord
     # =========================================
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $existing = Document::where('nip', $data['nip'])
-            ->where('type', $data['type'])
-            ->first();
+        // Jika bukan riwayat → hanya 1 dokumen per type
+        if (($data['is_riwayat'] ?? 0) == 0) {
 
-        if ($existing && $existing->status_dokumen === 'tolak') {
-            $file = $data['temp_path'];
+            $existing = Document::where('nip', $data['nip'])
+                ->where('type', $data['type'])
+                ->first();
 
-                $path = $file->store('temp/dokumen/'.$get('type').'/' . $data['type'], 'local');
-                $originalName = $file->getClientOriginalName();
-                $mime = $file->getMimeType();
-                $size = $file->getSize();
+            if ($existing && $existing->status_dokumen === 'tolak') {
 
-            // if ($file instanceof TemporaryUploadedFile) {
-            //     // Simpan file perbaikan di folder temporary
-            //     $path = $file->store('temp/dokumen/' . $data['type'], 'local');
-            //     $originalName = $file->getClientOriginalName();
-            //     $mime = $file->getMimeType();
-            //     $size = $file->getSize();
-            // } else {
-            //     // Pakai data lama jika bukan upload baru
-            //     $path = $existing->temp_path;
-            //     $originalName = $existing->original_name;
-            //     $mime = $existing->mime;
-            //     $size = $existing->size;
-            // }
+                if ($existing->temp_path) {
+                    \Storage::disk('local')->delete($existing->temp_path);
+                }
 
-            $existing->update([
-                'temp_path' => $path,
-                'original_name' => $originalName,
-                'mime' => $mime,
-                'size' => $size,
-                'status_dokumen' => 'proses',
-                'catatan' => $data['catatan'] ?? null,
-                'uploaded_at' => now(),
-            ]);
+                $existing->update([
+                    'temp_path' => $data['temp_path'],
+                    'original_name' => $data['original_name'],
+                    'mime' => $data['mime'],
+                    'size' => $data['size'],
+                    'status_dokumen' => 'proses',
+                    'catatan' => null,
+                    'uploaded_at' => now(),
+                ]);
 
-            // Hentikan insert baru
-            throw new \Filament\Support\Exceptions\Halt();
+                throw new \Filament\Support\Exceptions\Halt();
+            }
         }
 
-        // Dokumen baru
+        // default insert baru
         $data['status_dokumen'] = 'proses';
         $data['opd_id'] = auth()->user()->opd_id;
         $data['uploaded_at'] = now();
 
         return $data;
     }
+
+
 }
 
 
