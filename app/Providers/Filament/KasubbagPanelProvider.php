@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Support\Colors\Color;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -24,6 +25,8 @@ class KasubbagPanelProvider extends PanelProvider
             ->id('kasubbag')
             ->path('kasubbag')
             ->login()
+            ->brandName('DMS BKPSDM')
+            ->favicon(asset('logo.png'))
             ->authGuard('web')
 
             // ✅ MIDDLEWARE WEB LENGKAP (WAJIB)
@@ -37,6 +40,10 @@ class KasubbagPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+            ])
+            
+            ->colors([
+                'primary' => Color::Blue,
             ])
 
             // ✅ ROLE CHECK SETELAH LOGIN

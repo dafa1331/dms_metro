@@ -3,16 +3,28 @@
 namespace App\Filament\Pages;
 
 use Filament\Pages\Dashboard as BaseDashboard;
-use App\Filament\Widgets\PegawaiStats;
+use App\Filament\Widgets\AsnStats;
+use App\Filament\Widgets\JabatanChart;
+use App\Filament\Widgets\UsiaChart;
+use App\Filament\Widgets\AktivitasTerbaru;
 
 class Dashboard extends BaseDashboard
 {
     protected static ?string $navigationIcon = 'heroicon-o-home';
 
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            AsnStats::class,
+        ];
+    }
+
     public function getWidgets(): array
     {
         return [
-            // PegawaiStats::class,
+            JabatanChart::class,
+            UsiaChart::class,
+            AktivitasTerbaru::class,
         ];
     }
 }

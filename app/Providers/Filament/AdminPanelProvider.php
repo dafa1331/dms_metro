@@ -26,6 +26,8 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->brandName('DMS BKPSDM')
+            ->favicon(asset('logo.png'))
             ->authGuard('web')
             ->pages([
                 \App\Filament\Pages\Dashboard::class, // ← INI WAJIB ADA
@@ -49,6 +51,12 @@ class AdminPanelProvider extends PanelProvider
                 //  'panel.admin',
                 CheckAdminRole::class
             ])
+            ->widgets(widgets:[
+                widgets\AktivitasTerbaru::class,
+                widgets\AsnStats::class,
+                widgets\JabatanChart::class,
+                widgets\UsiaChart::class,
+            ])
 
             ->discoverResources(
                 in: app_path('Filament/Resources'),
@@ -58,5 +66,7 @@ class AdminPanelProvider extends PanelProvider
                 in: app_path('Filament/Pages'),
                 for: 'App\\Filament\\Pages'
             );
+
+            
     }
 }
