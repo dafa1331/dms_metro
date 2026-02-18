@@ -269,6 +269,11 @@ class Pegawai extends Model
         return "{$p->pangkat}, {$p->golongan}";
     }
 
+    public function dokumen()
+    {
+        return $this->hasMany(Document::class, 'nip');
+    }
+
 
 
 

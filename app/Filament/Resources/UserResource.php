@@ -13,6 +13,8 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Spatie\Permission\Models\Role;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\UsersTemplateExport;
 use Filament\Forms\Components\{
     TextInput,
     Select,
@@ -84,6 +86,35 @@ class UserResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([
+                Tables\Actions\Action::make('Import')
+                    ->label('Import Excel')
+                    ->form([
+                        Forms\Components\FileUpload::make('file')
+                            ->required()
+                            ->acceptedFileTypes([
+                                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                'text/csv'
+                            ]),
+                    ])
+                    ->action(function (array $data) {
+                        \Maatwebsite\Excel\Facades\Excel::import(
+                            new \App\Imports\UsersImport,
+                            storage_path('app/public/' . $data['file'])
+                        );
+                    }),
+
+                Tables\Actions\Action::make('downloadTemplate')
+                    ->label('Download Template')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->action(function () {
+                        return Excel::download(
+                            new UsersTemplateExport,
+                            'template_import_user.xlsx'
+                        );
+                    }),
+            ])
+
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama')
@@ -106,6 +137,7 @@ class UserResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

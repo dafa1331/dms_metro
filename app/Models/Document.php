@@ -59,4 +59,10 @@ class Document extends Model
         return $this->belongsTo(Pegawai::class, 'nip', 'nip');
     }
 
+    // public function dokumen()
+    // {
+    //     return $this->hasMany(Document::class, 'nip');
+    // }
+
+
 }

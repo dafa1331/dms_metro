@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RekonPegawaiExportController;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\LaporanController;
 use App\Models\Document; 
 use App\Livewire\LandingPage;
 
@@ -47,3 +48,9 @@ Route::get('/preview-temp', function (\Illuminate\Http\Request $request) {
 })
 ->middleware('auth')
 ->name('preview.temp');
+
+Route::get('/laporan/dokumen-opd/{opd}/pdf', [LaporanController::class, 'exportPdf'])
+    ->name('laporan.dokumen-opd.pdf');
+
+Route::get('/laporan/dokumen-opd/{opd}/docx', [LaporanController::class, 'exportDocx'])
+    ->name('laporan.dokumen-opd.docx');
