@@ -26,6 +26,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->profile()
             ->brandName('DMS BKPSDM')
             ->favicon(asset('logo.png'))
             ->authGuard('web')

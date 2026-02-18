@@ -25,6 +25,7 @@ class KasubbagPanelProvider extends PanelProvider
             ->id('kasubbag')
             ->path('kasubbag')
             ->login()
+            ->profile() //tambahkan untuk edit password
             ->brandName('DMS BKPSDM')
             ->favicon(asset('logo.png'))
             ->authGuard('web')
