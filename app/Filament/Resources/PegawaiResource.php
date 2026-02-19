@@ -22,6 +22,14 @@ class PegawaiResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->whereHas('statusAktif', function ($q) {
+                $q->where('status', 'AKTIF');
+            });
+    }
+
     public static function form(Form $form): Form
     {
         return $form->schema([

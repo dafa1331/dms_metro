@@ -22,6 +22,8 @@ class PegawaiResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    
+
     public static function getEloquentQuery(): Builder
     {
         $user = Filament::auth()->user();
@@ -36,12 +38,17 @@ class PegawaiResource extends Resource
             ->with([
                 'jabatanAktif.jabatan',
                 'jabatanAktif.jenjangJabatan',
-            ]) // ⬅️ penting (hindari N+1)
+                'statusAktif', // eager load juga
+            ])
             ->whereHas('jabatanAktif', function ($q) use ($opdIds) {
                 $q->whereIn('opd_id', $opdIds)
                 ->where('status_aktif', 1);
+            })
+            ->whereHas('statusAktif', function ($q) {
+                $q->where('status', 'AKTIF'); // ⬅️ filter pegawai aktif
             });
     }
+
 
 
     public static function form(Form $form): Form

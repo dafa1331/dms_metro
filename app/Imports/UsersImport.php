@@ -28,4 +28,14 @@ class UsersImport implements ToModel, WithHeadingRow
 
         return $user;
     }
+
+    public function chunkSize(): int
+    {
+        return 1000; // proses 1000 baris per chunk
+    }
+
+    public function batchSize(): int
+    {
+        return 1000; // insert 1000 data sekaligus
+    }
 }

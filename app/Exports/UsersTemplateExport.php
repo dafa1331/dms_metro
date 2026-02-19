@@ -15,7 +15,7 @@ class UsersTemplateExport implements WithHeadings, WithEvents
             'email',
             'password',
             'role',
-            'nama_opd',
+            'opd_id',
         ];
     }
 
@@ -31,7 +31,7 @@ class UsersTemplateExport implements WithHeadings, WithEvents
                 $sheet->setCellValue('B2', 'budi@email.com');
                 $sheet->setCellValue('C2', '123456');
                 $sheet->setCellValue('D2', 'kasubbag_kepegawaian');
-                $sheet->setCellValue('E2', 'Dinas Pendidikan');
+                $sheet->setCellValue('E2', '1');
             },
         ];
     }

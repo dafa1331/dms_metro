@@ -121,57 +121,59 @@ class Pegawai extends Model
         return Carbon::parse($this->tanggal_lahir)->age;
     }
 
+    // Hitung usia BUP berdasarkan jenis jabatan
     public function getUsiaBupAttribute()
     {
         $jabatan = $this->jabatanAktif?->jabatan;
 
-        if (!$jabatan) {
-            return null;
-        }
+        if (!$jabatan) return 58; // default
 
-        // Guru
-        if ($jabatan->jenis_jabatan === 'fungsional'
-            && str_contains(strtolower($jabatan->jenis_fungsional), 'guru')) {
+        // Guru fungsional
+        if ($jabatan->jenis_jabatan === 'fungsional' 
+            && str_contains(strtolower($jabatan->jenis_fungsional ?? ''), 'guru')) {
             return 60;
         }
 
-        // Fungsional
+        // Fungsional umum
         if ($jabatan->jenis_jabatan === 'fungsional') {
-            if (str_contains(strtolower($jabatan->jenjang), 'Ahli Utama')) {
-                return 65;
-            }
-
-            if (str_contains(strtolower($jabatan->jenjang), 'Ahli Madya')) {
-                return 60;
-            }
-
-            return 58; // muda & pertama
+            if (str_contains(strtolower($jabatan->jenjang_jabatan_id ?? ''), '8')) return 65;
+            if (str_contains(strtolower($jabatan->jenjang_jabatan_id ?? ''), '7')) return 60;
+            return 58;
         }
 
         // Struktural
         if ($jabatan->jenis_jabatan === 'struktural') {
-            if ($jabatan->eselon === 'II' || $jabatan->eselon === 'I') {
-                return 60; // pimpinan tinggi
+            if (str_starts_with($jabatan->eselon ?? '', 'I') ||
+                str_starts_with($jabatan->eselon ?? '', 'II')) {
+                return 60;
             }
-
-            return 58; // administrator ke bawah
         }
 
         return 58;
     }
 
+    // TMT BUP = akhir bulan saat usia pensiun tercapai
     public function getTmtBupAttribute()
     {
-        if (!$this->tanggal_lahir || !$this->usia_bup) {
-            return '-';
-        }
+        if (!$this->tanggal_lahir || !$this->usia_bup) return null;
 
-        $tglBup = \Carbon\Carbon::parse($this->tanggal_lahir)
+        return Carbon::parse($this->tanggal_lahir)
             ->addYears($this->usia_bup)
-            ->endOfMonth();
-
-        return $tglBup->format('Y-m-d');
+            ->endOfMonth()
+            ->format('Y-m-d');
     }
+
+    // TMT Pensiun = tanggal 1 bulan berikutnya setelah BUP
+    public function getTmtPensiunAttribute()
+    {
+        if (!$this->tmt_bup) return null;
+
+        return Carbon::parse($this->tmt_bup)
+            ->addMonth()
+            ->startOfMonth()
+            ->format('Y-m-d');
+    }
+
 
     public function getTanggalKontrakBerakhirAttribute()
     {
@@ -231,7 +233,7 @@ class Pegawai extends Model
         if (!$this->jabatan_aktif) return '-';
 
         $diff = \Carbon\Carbon::parse(
-            $this->jabatan_aktif->tmt_jabatan
+            $this->jabatan_aktif->tmt_mulai
         )->diff(now());
 
         return "{$diff->y} Th {$diff->m} Bln";
@@ -274,11 +276,10 @@ class Pegawai extends Model
         return $this->hasMany(Document::class, 'nip');
     }
 
-
-
-
-
-
-
+    public function statusAktif()
+{
+    return $this->hasOne(RiwayatKepegawaian::class)
+        ->where('is_aktif', 1);
+}
 
 }
