@@ -165,14 +165,14 @@ class Pegawai extends Model
 
     // TMT Pensiun = tanggal 1 bulan berikutnya setelah BUP
     public function getTmtPensiunAttribute()
-    {
-        if (!$this->tmt_bup) return null;
+{
+    if (!$this->tmt_bup) return null;
 
-        return Carbon::parse($this->tmt_bup)
-            ->addMonth()
-            ->startOfMonth()
-            ->format('Y-m-d');
-    }
+    return Carbon::parse($this->tmt_bup)
+        ->addMonthNoOverflow() // <- penting
+        ->startOfMonth()
+        ->format('Y-m-d');
+}
 
 
     public function getTanggalKontrakBerakhirAttribute()
