@@ -120,8 +120,24 @@ class RiwayatJabatanRelationManager extends RelationManager
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('jabatan.nama_jabatan')
-                    ->label('Jabatan'),
+                Tables\Columns\TextColumn::make('jabatan')
+                    ->label('Jabatan')
+                    ->formatStateUsing(function ($record) {
+
+                        $jabatan = $record->jabatan;
+
+                        if (!$jabatan) {
+                            return '-';
+                        }
+
+                        if ($jabatan->jenis_jabatan === 'fungsional') {
+                            return ($jabatan->jenjangJabatan?->nama_jenjang ?? '') 
+                                    . ' - ' . 
+                                $jabatan->nama_jabatan;
+                        }
+
+                        return $jabatan->nama_jabatan;
+                    }),
 
                 Tables\Columns\BadgeColumn::make('jenis_jabatan')
                     ->colors([
