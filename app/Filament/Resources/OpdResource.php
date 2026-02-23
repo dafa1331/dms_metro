@@ -152,13 +152,12 @@ class OpdResource extends Resource
             ])
 
             ->columns([
-                Tables\Columns\TextColumn::make('nama_opd')
+                Tables\Columns\TextColumn::make('nama_lengkap')
                     ->label('Nama OPD')
-                    ->sortable()
-                    ->searchable()
-                    ->formatStateUsing(fn ($record) =>
-                        str_repeat('— ', max(0, $record->level - 1)) . $record->nama_opd
-                    ),
+                    ->searchable(query: function ($query, $search) {
+                        $query->where('nama_opd', 'like', "%{$search}%")
+                            ->orWhere('kode_opd', 'like', "%{$search}%");
+                    }),
 
                 Tables\Columns\TextColumn::make('jenis_opd')
                     ->badge(),

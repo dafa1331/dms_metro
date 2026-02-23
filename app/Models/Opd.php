@@ -100,6 +100,19 @@ class Opd extends Model
 
         return $opds;
     }
+
+    public function getNamaLengkapAttribute()
+    {
+        $names = [];
+        $current = $this;
+
+        while ($current) {
+            $names[] = $current->nama_opd;
+            $current = $current->parent;
+        }
+
+        return implode(' - ', $names);
+    }
 }
 
 
