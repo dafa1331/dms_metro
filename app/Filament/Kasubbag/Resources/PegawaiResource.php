@@ -99,8 +99,8 @@ class PegawaiResource extends Resource
     {
         return [
             'index' => Pages\ListPegawais::route('/'),
-            'create' => Pages\CreatePegawai::route('/create'),
             'view' => Pages\ViewPegawai::route('/{record}'), // <- pastikan ini ada
+            
         ];
     }
 }

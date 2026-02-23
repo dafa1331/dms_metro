@@ -44,7 +44,9 @@ class DokumenResource extends Resource
         return parent::getEloquentQuery()
             ->whereHas('pegawai.jabatanAktif', function ($q) use ($opdIds) {
                 $q->whereIn('opd_id', $opdIds);
-            });
+            })
+            ->whereIn('status_dokumen', ['proses','terima']) // hanya proses atau terima
+            ->orderByDesc('uploaded_at'); // urut terbaru
     }
 
     /* =========================

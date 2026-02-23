@@ -69,4 +69,37 @@ class Opd extends Model
 
         return implode(' - ', $labels);
     }
+
+    public function getFullPathAttribute()
+    {
+        $names = [$this->nama_opd];
+
+        $parent = $this->parent;
+
+        while ($parent) {
+            $names[] = $parent->nama_opd;
+            $parent = $parent->parent;
+        }
+
+        return implode(' - ', $names);
+    }
+
+    public static function getDescendantsAndSelf($parentId)
+    {
+        $opds = collect();
+
+        $parent = self::find($parentId);
+        if ($parent) {
+            $opds->push($parent);
+
+            $children = self::where('parent_id', $parent->id)->get();
+            foreach ($children as $child) {
+                $opds = $opds->merge(self::getDescendantsAndSelf($child->id));
+            }
+        }
+
+        return $opds;
+    }
 }
+
+

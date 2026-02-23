@@ -26,6 +26,31 @@ class OpdResource extends Resource
 
     protected static ?string $navigationGroup = 'Master Data';
 
+    protected static function getOpdHierarchy()
+    {
+        $opds = \App\Models\Opd::orderBy('urutan')->get();
+
+        $result = [];
+
+        foreach ($opds as $opd) {
+            $result[$opd->id] = static::buildFullPath($opd);
+        }
+
+        return $result;
+    }
+
+    protected static function buildFullPath($opd)
+    {
+        $names = [$opd->nama_opd];
+
+        while ($opd->parent) {
+            $opd = $opd->parent;
+            $names[] = $opd->nama_opd;
+        }
+
+        return implode(' - ', $names);
+    }
+
     
     public static function form(Form $form): Form
     {
@@ -57,13 +82,13 @@ class OpdResource extends Resource
 
             Forms\Components\Select::make('parent_id')
                 ->label('Induk OPD')
-                ->options(Opd::pluck('nama_opd', 'id'))
+                ->options(fn () => static::getOpdHierarchy())
                 ->searchable()
                 ->nullable()
                 ->reactive()
                 ->afterStateUpdated(function ($state, callable $set) {
                     if ($state) {
-                        $parent = Opd::find($state);
+                        $parent = \App\Models\Opd::find($state);
                         $set('level', $parent->level + 1);
                     } else {
                         $set('level', 1);
