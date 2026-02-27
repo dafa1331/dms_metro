@@ -110,6 +110,31 @@ class PegawaiResource extends Resource
                 ->color('success')
                 ->url(route('rekon.pegawai.export'))
                 ->openUrlInNewTab(),
+
+            
+            Action::make('import')
+    ->label('Import Excel')
+    ->icon('heroicon-o-arrow-up-tray')
+    ->visible(fn () => auth()->user()?->hasRole('admin') ?? false)
+    ->form([
+        Forms\Components\FileUpload::make('file')
+            ->label('File Excel Pegawai')
+            ->disk('local') // 🔥 WAJIB
+            ->directory('imports/pegawai') // 🔥 beda folder
+            ->preserveFilenames()
+            ->required()
+            ->acceptedFileTypes([
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.ms-excel',
+            ]),
+    ])
+    ->action(function (array $data) {
+        Excel::import(
+            new PegawaiImport,
+            storage_path('app/' . $data['file'])
+        );
+    })
+    ->successNotificationTitle('Import Pegawai berhasil'),
             ])
 
             
