@@ -112,7 +112,7 @@ class PegawaiResource extends Resource
                 ->openUrlInNewTab(),
 
             
-            Action::make('import')
+             Tables\Actions\Action::make('import')
     ->label('Import Excel')
     ->icon('heroicon-o-arrow-up-tray')
     ->visible(fn () => auth()->user()?->hasRole('admin') ?? false)
