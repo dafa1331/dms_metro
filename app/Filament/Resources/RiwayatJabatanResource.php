@@ -10,6 +10,9 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\RiwayatJabatanImport;
+use Illuminate\Support\Facades\Storage;
 
 class RiwayatJabatanResource extends Resource
 {
@@ -77,6 +80,30 @@ class RiwayatJabatanResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([
+    Tables\Actions\Action::make('importExcel')
+        ->label('Import Excel')
+        ->form([
+            Forms\Components\FileUpload::make('file')
+                ->disk('public') // WAJIB
+                ->directory('imports') // supaya rapi
+                ->required()
+                ->acceptedFileTypes([
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'application/vnd.ms-excel',
+                ]),
+        ])
+        ->action(function (array $data) {
+
+            // ambil path absolut file
+            $path = Storage::disk('public')->path($data['file']);
+
+            // import
+            Excel::import(new RiwayatJabatanImport, $path);
+
+        })
+        ->color('success'),
+            ])
             ->columns([
 
                 Tables\Columns\TextColumn::make('pegawai.nip')
@@ -119,17 +146,17 @@ class RiwayatJabatanResource extends Resource
                         0 => 'Tidak Aktif',
                     ]),
                 Tables\Filters\Filter::make('tmt_mulai')
-        ->form([
-            Forms\Components\DatePicker::make('dari'),
-            Forms\Components\DatePicker::make('sampai'),
-        ])
-        ->query(function (Builder $query, array $data) {
-            return $query
-                ->when($data['dari'],
-                    fn ($q) => $q->whereDate('tmt_mulai', '>=', $data['dari']))
-                ->when($data['sampai'],
-                    fn ($q) => $q->whereDate('tmt_mulai', '<=', $data['sampai']));
-        }),
+                    ->form([
+                        Forms\Components\DatePicker::make('dari'),
+                        Forms\Components\DatePicker::make('sampai'),
+                    ])
+                    ->query(function (Builder $query, array $data) {
+                        return $query
+                            ->when($data['dari'],
+                                fn ($q) => $q->whereDate('tmt_mulai', '>=', $data['dari']))
+                            ->when($data['sampai'],
+                                fn ($q) => $q->whereDate('tmt_mulai', '<=', $data['sampai']));
+                    }),
 
             ])
             ->actions([
