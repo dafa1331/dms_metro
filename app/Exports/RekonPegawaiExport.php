@@ -2,22 +2,26 @@
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\FromCollection;
+use App\Models\Pegawai;
+use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 
-class RekonPegawaiExport implements FromCollection, WithHeadings, WithMapping
+class RekonPegawaiExport implements FromQuery, WithHeadings, WithMapping, WithChunkReading
 {
-    protected $data;
-
-    public function __construct($data)
+    public function query()
     {
-        $this->data = $data;
-    }
-
-    public function collection()
-    {
-        return $this->data;
+        return Pegawai::with([
+            'jabatanAktif.opd.parent',
+            'jabatanAktif.jabatan.jenjangJabatan',
+            'pangkatTerakhir.pangkat',
+            'kepegawaianAktif',
+            'riwayatPendidikan',
+            'pendidikan_terakhir',
+        ])
+        ->whereHas('jabatanAktif')
+        ->whereHas('pangkatTerakhir');
     }
 
     public function headings(): array
@@ -55,6 +59,7 @@ class RekonPegawaiExport implements FromCollection, WithHeadings, WithMapping
     public function map($p): array
     {
         $opd = $p->jabatanAktif?->opd;
+
         return [
             "'".$p->nip,
             $p->nama_lengkap,
@@ -64,10 +69,11 @@ class RekonPegawaiExport implements FromCollection, WithHeadings, WithMapping
             $p->tanggal_lahir,
             $p->kepegawaianAktif?->tmt_status?->format('Y-m-d') ?? '-',
             $opd?->parent?->nama_opd ?? $opd?->nama_opd ?? '-',
-            $p->jabatanAktif?->opd?->nama_opd ?? '-',
+            $opd?->nama_opd ?? '-',
             $p->jabatanAktif
                 ? ($p->jabatanAktif->jabatan->jenis_jabatan === 'fungsional'
-                    ? $p->jabatanAktif->jabatan->jenjangJabatan?->nama_jenjang . ' - ' . $p->jabatanAktif->jabatan->nama_jabatan
+                    ? ($p->jabatanAktif->jabatan->jenjangJabatan?->nama_jenjang ?? '') 
+                        . ' - ' . $p->jabatanAktif->jabatan->nama_jabatan
                     : $p->jabatanAktif->jabatan->nama_jabatan)
                 : '-',
             $p->jabatanAktif?->jabatan->jenis_jabatan ?? '-',
@@ -75,8 +81,8 @@ class RekonPegawaiExport implements FromCollection, WithHeadings, WithMapping
             $p->pangkatTerakhir?->pangkat->golongan ?? '-',
             $p->pangkatTerakhir?->tmt_pangkat ?? '-',
             $p->pendidikan_terakhir
-                ? $p->pendidikan_terakhir->tingkat_pendidikan
-                    . ' - ' . $p->pendidikan_terakhir->nama_sekolah
+                ? $p->pendidikan_terakhir->tingkat_pendidikan . ' - ' 
+                    . $p->pendidikan_terakhir->nama_sekolah
                 : '-',
             $p->pendidikan_terakhir_tingkat,
             $p->pendidikan_terakhir_jurusan,
@@ -90,5 +96,10 @@ class RekonPegawaiExport implements FromCollection, WithHeadings, WithMapping
             $p->status_pegawai,
             $p->kepegawaianAktif?->status ?? '-',
         ];
+    }
+
+    public function chunkSize(): int
+    {
+        return 1000;
     }
 }

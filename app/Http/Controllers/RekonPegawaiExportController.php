@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pegawai;
 use App\Exports\RekonPegawaiExport;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -10,20 +9,14 @@ class RekonPegawaiExportController extends Controller
 {
     public function export()
     {
-        $data = Pegawai::with([
-            'jabatanAktif.opd.parent',
-            'jabatanAktif.jabatan.jenjangJabatan',
-            'pangkatTerakhir.pangkat',
-            'kepegawaianAktif',
-            'riwayatPendidikan',
-        ])
-        ->whereHas('jabatanAktif')
-        ->whereHas('pangkatTerakhir')
-        ->get();
+        ini_set('memory_limit', '512M');
+        set_time_limit(300);
+
+        $fileName = 'rekon-pegawai-' . now()->format('YmdHis') . '.csv';
 
         return Excel::download(
-            new RekonPegawaiExport($data),
-            'rekon-pegawai.csv'
+            new RekonPegawaiExport,
+            $fileName
         );
     }
 }
