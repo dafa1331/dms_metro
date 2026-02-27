@@ -96,13 +96,13 @@ class RiwayatJabatanResource extends Resource
         ])
         ->action(function (array $data) {
 
-            // ambil path absolut file
-            $path = Storage::disk('public')->path($data['file']);
+    Excel::import(
+        new RiwayatJabatanImport,
+        $data['file'],
+        'public'
+    );
 
-            // import
-            Excel::import(new RiwayatJabatanImport, $path);
-
-        })
+})
         ->color('success'),
             ])
             ->columns([
