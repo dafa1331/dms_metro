@@ -81,29 +81,31 @@ class RiwayatJabatanResource extends Resource
     {
         return $table
             ->headerActions([
-    Tables\Actions\Action::make('importExcel')
-        ->label('Import Excel')
-        ->form([
-            Forms\Components\FileUpload::make('file')
-                ->disk('public') // WAJIB
-                ->directory('imports') // supaya rapi
-                ->storeFiles()
-                ->required()
-                ->acceptedFileTypes([
-                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    'application/vnd.ms-excel',
-                ]),
-        ])
-        ->action(function (array $data) {
+   Tables\Actions\Action::make('importExcel')
+    ->label('Import Excel')
+    ->icon('heroicon-o-arrow-up-tray')
+    ->form([
+        Forms\Components\FileUpload::make('file')
+            ->label('File Excel Riwayat Jabatan')
+            ->disk('local')                  // 🔥 pakai local, jangan public
+            ->directory('imports/riwayat-jabatan')
+            ->preserveFilenames()
+            ->required()
+            ->acceptedFileTypes([
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.ms-excel',
+            ]),
+    ])
+    ->action(function (array $data) {
 
-    Excel::import(
-        new RiwayatJabatanImport,
-        $data['file'],
-        'public'
-    );
+        Excel::import(
+            new RiwayatJabatanImport,
+            storage_path('app/' . $data['file'])
+        );
 
-})
-        ->color('success'),
+    })
+    ->successNotificationTitle('Import Riwayat Jabatan berhasil')
+    ->color('success')
             ])
             ->columns([
 
