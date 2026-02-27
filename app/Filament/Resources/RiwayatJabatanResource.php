@@ -118,7 +118,18 @@ class RiwayatJabatanResource extends Resource
                         1 => 'Aktif',
                         0 => 'Tidak Aktif',
                     ]),
-                    
+                Tables\Filters\Filter::make('tmt_mulai')
+        ->form([
+            Forms\Components\DatePicker::make('dari'),
+            Forms\Components\DatePicker::make('sampai'),
+        ])
+        ->query(function (Builder $query, array $data) {
+            return $query
+                ->when($data['dari'],
+                    fn ($q) => $q->whereDate('tmt_mulai', '>=', $data['dari']))
+                ->when($data['sampai'],
+                    fn ($q) => $q->whereDate('tmt_mulai', '<=', $data['sampai']));
+        }),
 
             ])
             ->actions([
