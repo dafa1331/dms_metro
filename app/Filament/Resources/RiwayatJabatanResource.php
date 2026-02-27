@@ -87,6 +87,7 @@ class RiwayatJabatanResource extends Resource
             Forms\Components\FileUpload::make('file')
                 ->disk('public') // WAJIB
                 ->directory('imports') // supaya rapi
+                ->storeFiles()
                 ->required()
                 ->acceptedFileTypes([
                     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
