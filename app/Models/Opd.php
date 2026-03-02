@@ -113,6 +113,11 @@ class Opd extends Model
 
         return implode(' - ', $names);
     }
+
+    public function riwayatJabatan()
+    {
+        return $this->hasMany(\App\Models\RiwayatJabatan::class, 'opd_id');
+    }
 }
 
 
