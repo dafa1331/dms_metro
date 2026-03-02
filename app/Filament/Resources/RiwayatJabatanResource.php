@@ -30,7 +30,7 @@ class RiwayatJabatanResource extends Resource
             ->schema([
 
                 Forms\Components\Select::make('pegawai_id')
-                    ->relationship('pegawai', 'nama')
+                    ->relationship('pegawai', 'nama_lengkap')
                     ->searchable()
                     ->required(),
 
