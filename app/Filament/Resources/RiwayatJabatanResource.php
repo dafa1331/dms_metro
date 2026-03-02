@@ -46,9 +46,8 @@ class RiwayatJabatanResource extends Resource
 
                 Forms\Components\Select::make('jenis_jabatan')
                     ->options([
-                        'struktural' => 'Struktural',
-                        'fungsional' => 'Fungsional',
-                        'pelaksana'  => 'Pelaksana',
+                        'definitif' => 'Definitif',
+                        'tambahan' => 'Tambahan',
                     ])
                     ->required(),
 
