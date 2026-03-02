@@ -43,14 +43,23 @@ class RiwayatJabatanImport implements ToCollection, WithHeadingRow
 
                 if ($isStruktural === 1) {
 
-                    // Jika jabatan baru struktural → tutup semua jabatan aktif
+                    $tmtSebelum = $tmtBaru->copy()->subDay();
+
+                    // 1️⃣ Tutup semua jabatan aktif pegawai ini
                     RiwayatJabatan::where('pegawai_id', $pegawai->id)
                         ->whereNull('tmt_selesai')
                         ->update([
-                            'tmt_selesai' => $tmtBaru->copy()->subDay(),
+                            'tmt_selesai' => $tmtSebelum,
                             'status_aktif' => 0,
                         ]);
 
+                    // 2️⃣ Tutup pejabat lama di jabatan yang akan ditempati
+                    RiwayatJabatan::where('jabatan_id', $row['jabatan_id'])
+                        ->whereNull('tmt_selesai')
+                        ->update([
+                            'tmt_selesai' => $tmtSebelum,
+                            'status_aktif' => 0,
+                        ]);
                 } else {
 
                     // Jika bukan struktural → tutup jabatan aktif dengan jenis sama
