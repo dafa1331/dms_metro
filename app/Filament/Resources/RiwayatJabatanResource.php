@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\RiwayatJabatanImport;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Jabatan;
 
 class RiwayatJabatanResource extends Resource
 {
@@ -35,9 +36,24 @@ class RiwayatJabatanResource extends Resource
                     ->required(),
 
                 Forms\Components\Select::make('jabatan_id')
-                    ->relationship('jabatan', 'nama_jabatan')
-                    ->searchable()
-                    ->required(),
+                ->label('Jabatan')
+                ->options(function () {
+                    return Jabatan::query()
+                        ->with('jenjangJabatan')
+                        ->where(function ($q) {
+                            $q->where('jenis_jabatan', '!=', 'struktural')
+                            ->orWhereDoesntHave('riwayatJabatanAktif');
+                        })
+                        ->get()
+                        ->mapWithKeys(fn ($j) => [
+                            $j->id =>
+                                ($j->jenjangJabatan?->nama_jenjang ?? 'Non Fungsional')
+                                . ' - ' . $j->nama_jabatan
+                        ])
+                        ->toArray();
+                })
+                ->searchable()
+                ->required(),
 
                 Forms\Components\Select::make('opd_id')
                     ->relationship('opd', 'nama_opd')
