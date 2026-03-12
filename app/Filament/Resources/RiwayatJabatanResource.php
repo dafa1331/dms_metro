@@ -55,10 +55,22 @@ class RiwayatJabatanResource extends Resource
                 ->searchable()
                 ->required(),
 
+                // Forms\Components\Select::make('opd_id')
+                //     ->relationship('opd', 'nama_opd')
+                //     ->searchable()
+                //     ->required(),
                 Forms\Components\Select::make('opd_id')
-                    ->relationship('opd', 'nama_opd')
-                    ->searchable()
-                    ->required(),
+                ->label('Unit Kerja')
+                ->options(
+                    Opd::with('parent.parent')
+                        ->where('aktif', 1)
+                        ->orderBy('level')
+                        ->orderBy('urutan')
+                        ->get()
+                        ->pluck('label_hierarchy', 'id')
+                )
+                ->searchable()
+                ->required(),
 
                 Forms\Components\Select::make('jenis_jabatan')
                     ->options([
