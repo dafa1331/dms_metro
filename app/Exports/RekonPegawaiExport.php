@@ -19,7 +19,10 @@ class RekonPegawaiExport implements FromQuery, WithHeadings, WithMapping, WithCh
             'kepegawaianAktif',
             'riwayatPendidikan',
         ])
-        ->whereHas('jabatanAktif');
+        ->whereHas('jabatanAktif')
+        ->whereHas('kepegawaianAktif', function ($q) {
+            $q->where('status', 'aktif');
+        });
         // ->whereHas('pangkatTerakhir');
     }
 
