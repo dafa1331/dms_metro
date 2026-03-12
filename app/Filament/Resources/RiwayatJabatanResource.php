@@ -14,6 +14,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\RiwayatJabatanImport;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Jabatan;
+use App\Models\Opd;
 
 class RiwayatJabatanResource extends Resource
 {
